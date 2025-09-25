@@ -4,14 +4,15 @@ use crate::plugins::snake::snakecell::SnakeCell;
 use rand::{Rng, SeedableRng};
 use crate::plugins::snake::snakecell::GRID_SIZE;
 
-static SNAKE_LENGTH: u8 = 5;
-static SWITCH_PERIOD: u8 = 5;
+static SNAKE_LENGTH: u8 = 10;
+static SWITCH_PERIOD: u8 = 10;
 
 pub fn visualize_snake(
     mut commands: Commands,
     mut snake_state: ResMut<SnakeState>,
     query: Query<(Entity, &SnakeCell)>,
 ) {
+    //snake_state.dimention5 = snake_state.dimention5 + 1;
     snake_state.dimention4 = snake_state.dimention4 + 1;
     
     let time: u8 = snake_state.dimention4;
@@ -24,7 +25,6 @@ pub fn visualize_snake(
         
     for (entity, snake_cell) in query.iter() {
         let visibility = if is_cell_in_snake_cells(snake_cell, &snake_cells) {
-            println!("Cell: x{} y{} z{} is in snake cells", snake_cell.x, snake_cell.y, snake_cell.z);
             Visibility::Visible
         } else {
             Visibility::Hidden
@@ -59,7 +59,9 @@ fn get_snake_cells(time: u8, switch_period: u8, grid_size: u8, dimension_seed: u
 
         t = t + delta;
 
-        println!("t:{} - tm:{} - dir:{} - ldir:{} - d:{} - p:{}", t, time, direction, last_direction, delta, position);
+        // TODO: Check for bounds to switch direction
+
+        // println!("t:{} - tm:{} - dir:{} - ldir:{} - d:{} - p:{}", t, time, direction, last_direction, delta, position);
 
         if t >= time {
             let mut snake_cells: Vec<Vec3> = Vec::new();
@@ -69,7 +71,6 @@ fn get_snake_cells(time: u8, switch_period: u8, grid_size: u8, dimension_seed: u
                 let backward_direction = if i < delta { -direction } else { -last_direction };
                 cell_position = cell_position + backward_direction;
             }
-            println!("Snake cells: {:?}", snake_cells);
             return snake_cells;
         }
         else {
@@ -94,12 +95,12 @@ fn random_direction(direction: Vec3, dimension_seed: u8, position: Vec3, grid_si
         !( // Exclude unsuitable directions
             d == &direction 
             || d == &(-direction)
-            || (position.x as u8 == 0 && d.x == -1.0)
-            || (position.x as u8 == grid_size - 1 && d.x == 1.0 )
-            || (position.y as u8 == 0 && d.y == -1.0)
-            || (position.y as u8 == grid_size - 1 && d.y == 1.0)
-            || (position.z as u8 == 0 && d.z == -1.0)
-            || (position.z as u8 == grid_size - 1 && d.z == 1.0)
+            || (position.x as u8 <= 0 && d.x == -1.0)
+            || (position.x as u8 >= grid_size - 1 && d.x == 1.0 )
+            || (position.y as u8 <= 0 && d.y == -1.0)
+            || (position.y as u8 >= grid_size - 1 && d.y == 1.0)
+            || (position.z as u8 <= 0 && d.z == -1.0)
+            || (position.z as u8 >= grid_size - 1 && d.z == 1.0)
         )
     }).collect::<Vec<&Vec3>>();
 
