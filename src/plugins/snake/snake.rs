@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use crate::plugins::snake::visualizesnake::visualize_snake;
 use crate::plugins::snake::snakestate::SnakeState;
 use crate::plugins::snake::snakecell::create_snake_cells;
+use crate::plugins::snake::snakecell::GRID_SIZE;
 
 /// Snake plugin for the Bevy game engine
 pub struct SnakePlugin;
@@ -23,9 +24,10 @@ fn setup_snake(
 ) {
     // circular base
     commands.spawn((
-        Mesh3d(meshes.add(Circle::new(4.0))),
+        Mesh3d(meshes.add(Circle::new(GRID_SIZE as f32 / 2.0))),
         MeshMaterial3d(materials.add(Color::WHITE)),
-        Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)),
+        Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2))
+            .with_translation(Vec3::new(GRID_SIZE as f32 / 2.0, 0.0, GRID_SIZE as f32 / 2.0)),
     ));
     // light
     commands.spawn((
@@ -38,6 +40,7 @@ fn setup_snake(
     // Camera
     commands.spawn((
         Camera3d::default(),
-        Transform::from_xyz(-20.5, 40.5, 90.0).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_xyz(-20.5, 40.5, 90.0)
+            .looking_at(Vec3::new(GRID_SIZE as f32 / 2.0, GRID_SIZE as f32 / 2.0, GRID_SIZE as f32 / 2.0), Vec3::Y),
     ));
 }

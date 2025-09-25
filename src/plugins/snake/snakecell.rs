@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-static GRID_SIZE: u8 = 30;
+pub static GRID_SIZE: u8 = 30;
 static CELL_SIZE: f32 = 1.0;
 
 #[derive(Component)]
