@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::ui::RelativeCursorPosition;
 
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Axis{
     None,
     X,
@@ -8,7 +9,12 @@ pub enum Axis{
     Z,
 }
 
-#[derive(Component)]
+#[derive(Component, Debug, PartialEq)]
+pub struct AxisSelector{
+    pub axis: Axis,
+}
+
+#[derive(Component, PartialEq)]
 pub struct UIDimentionBlock{
     pub dimention: u8,
     pub axis: Axis,
@@ -19,7 +25,7 @@ impl UIDimentionBlock {
     const fn new(dimention: u8) -> Self {
         Self {
             dimention,
-            axis: Axis::X,
+            axis: Axis::None,
             value: 0.0,
         }
     }
@@ -113,6 +119,8 @@ fn create_axis_selector(axis: Axis) -> impl Bundle {
         Button,
         ZIndex(3),
         BackgroundColor(color),
+        Outline{width: Val::Px(0.0), offset: Val::Px(0.0), color: Color::WHITE},
+        AxisSelector{axis},
         children![
             Text::new(text),
             TextFont {
@@ -179,7 +187,13 @@ pub fn update_value_selector(
         let text = children_query.get(*value_selector).unwrap().get(1).unwrap();
 
         if let Ok(mut text_elem) = text_query.get_mut(*text) {
-            text_elem.0 = ((dimension_block.value * 100.0) as u8).to_string();
+            let text = match dimension_block.axis{
+                Axis::None => ((dimension_block.value * 100.0) as u8).to_string(),
+                Axis::X => "".to_string(),
+                Axis::Y => "".to_string(),
+                Axis::Z => "".to_string(),
+            };
+            text_elem.0 = text;
         }
 
         if let Ok(mut node_elem) = node_query.get_mut(*slider) {
@@ -195,13 +209,50 @@ pub fn control_dimention_value_selector(
 ){
     for (interaction, relative_cursor_position, child_of) in query.iter() {
         if *interaction == Interaction::Pressed {
-            println!("interaction: {:?}", interaction);
-            println!("relative_cursor_position: {:?}", relative_cursor_position);
-
             let parent = child_of.parent();
 
             if let Ok(mut parent_elem) = dimention_block_query.get_mut(parent) {
                 parent_elem.value = relative_cursor_position.normalized.unwrap().x.clamp(0.0, 1.0);
+            }
+        }
+    }
+}
+
+// Select axis for dimension
+pub fn select_axis(
+    interaction_query: Query<(&Interaction, &AxisSelector, &ChildOf), (Changed<Interaction>, With<Button>)>,
+    mut dimention_block_query: Query<(&mut UIDimentionBlock, &Children)>,
+){
+    for (interaction, axis_selector, child_of) in interaction_query {
+        if *interaction != Interaction::Pressed {break;}
+
+        let axis_selector_container = child_of.parent();
+
+        for (mut block, children) in dimention_block_query.iter_mut() {
+            if children.contains(&axis_selector_container) {
+                block.axis = axis_selector.axis;
+            }
+            else if block.axis == axis_selector.axis {
+                block.axis = Axis::None;
+            }
+        }
+    }
+}
+
+// Update axis selection outline
+pub fn update_axis_selector(
+    query: Query<(Entity, &UIDimentionBlock)>,
+    children_query: Query<&Children>,
+    mut axis_button_query: Query<(&mut Outline, &AxisSelector, &ChildOf)>,
+){
+    for (entity, dimensionblock) in query.iter() {
+        let axis_selector_container = children_query.get(entity).unwrap().get(1).unwrap();
+
+        for (mut outline, axis_selector, child_of) in axis_button_query.iter_mut() {
+            let parent = &child_of.parent();
+            if parent == axis_selector_container {
+                let outline_width = if axis_selector.axis == dimensionblock.axis {3.0} else {0.0};
+                outline.width = Val::Px(outline_width);
             }
         }
     }
