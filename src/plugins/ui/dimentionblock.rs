@@ -12,7 +12,7 @@ pub enum Axis{
 pub struct UIDimentionBlock{
     pub dimention: u8,
     pub axis: Axis,
-    pub value: u8,
+    pub value: f32,
 }
 
 impl UIDimentionBlock {
@@ -20,7 +20,7 @@ impl UIDimentionBlock {
         Self {
             dimention,
             axis: Axis::X,
-            value: 0,
+            value: 0.0,
         }
     }
 }
@@ -70,20 +70,7 @@ fn create_dimention_block(commands: &mut Commands, dimention: u8){
                     create_axis_selector(Axis::Z),
                 ]
             ),
-            ( // Value selector
-                Node{
-                    position_type: PositionType::Absolute,
-                    top: Val::Px(0.0),
-                    left: Val::Px(140.0),
-                    width: Val::Px(300.),
-                    height: Val::Px(30.),
-                    ..default()
-                },
-                ZIndex(2),
-                BackgroundColor(Color::srgb(0.60, 0.60, 0.60)),
-                Interaction::None,
-                RelativeCursorPosition::default(),
-            ),
+            create_value_selector(),
         ],
     );
 
@@ -133,4 +120,89 @@ fn create_axis_selector(axis: Axis) -> impl Bundle {
                 ..Default::default()}
         ],
     );
+}
+
+fn create_value_selector() -> impl Bundle {
+    return (
+        ( // Background
+            Node{ 
+                position_type: PositionType::Absolute,
+                top: Val::Px(0.0),
+                left: Val::Px(140.0),
+                width: Val::Px(300.),
+                height: Val::Px(30.),
+                ..default()
+            },
+            ZIndex(2),
+            BackgroundColor(Color::srgb(0.60, 0.60, 0.60)),
+            Interaction::None,
+            RelativeCursorPosition::default(),
+            children![
+                ( // Foreground slider
+                    Node{
+                        position_type: PositionType::Absolute,
+                        top: Val::Px(0.0),
+                        left: Val::Px(0.0),
+                        width: Val::Px(300.),
+                        height: Val::Px(30.),
+                        ..default()
+                    },
+                    ZIndex(3),
+                    BackgroundColor(Color::srgb(0.60, 1.00, 0.60)),
+                    Interaction::None,
+                    RelativeCursorPosition::default(),
+                ),
+                (
+                Text::new(0.0.to_string()),
+                TextFont {
+                    font_size: 26.0,
+                    ..Default::default()},
+                ZIndex(4),
+                )
+            ],
+        ),
+    );
+}
+
+// Update dimension value and text
+pub fn update_value_selector(
+    query: Query<(Entity, &UIDimentionBlock)>,
+    children_query: Query<&Children>,
+    mut text_query: Query<&mut Text>,
+    mut node_query: Query<&mut Node>,
+){
+    for (entity, dimension_block) in query.iter() {
+
+        let value_selector = children_query.get(entity).unwrap().get(2).unwrap();
+
+        let slider = children_query.get(*value_selector).unwrap().get(0).unwrap();
+        let text = children_query.get(*value_selector).unwrap().get(1).unwrap();
+
+        if let Ok(mut text_elem) = text_query.get_mut(*text) {
+            text_elem.0 = ((dimension_block.value * 100.0) as u8).to_string();
+        }
+
+        if let Ok(mut node_elem) = node_query.get_mut(*slider) {
+            node_elem.width = Val::Px(dimension_block.value as f32 * 300.0);
+        }
+    }
+}
+
+// Control dimension value by dragging the slider
+pub fn control_dimention_value_selector(
+    query: Query<(&Interaction, &RelativeCursorPosition, &ChildOf)>,
+    mut dimention_block_query: Query<&mut UIDimentionBlock>
+){
+    for (interaction, relative_cursor_position, child_of) in query.iter() {
+        if *interaction == Interaction::Pressed {
+            println!("interaction: {:?}", interaction);
+            println!("relative_cursor_position: {:?}", relative_cursor_position);
+
+            let parent = child_of.parent();
+
+            if let Ok(mut parent_elem) = dimention_block_query.get_mut(parent) {
+                parent_elem.value = relative_cursor_position.normalized.unwrap().x.clamp(0.0, 1.0);
+            }
+        }
+    }
 }
