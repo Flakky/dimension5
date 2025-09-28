@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Resource, Default)]
+#[derive(Resource, Default, Debug)]
 pub struct SnakeState {
     pub dimention1: u8,
     pub dimention2: u8,

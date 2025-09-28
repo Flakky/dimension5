@@ -1,41 +1,155 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::visibility};
 use crate::plugins::snake::snakestate::SnakeState;
 use crate::plugins::snake::snakecell::SnakeCell;
 use rand::{Rng, SeedableRng};
 use crate::plugins::snake::snakecell::GRID_SIZE;
+use std::collections::HashMap;
 
-static SNAKE_LENGTH: u8 = 10;
-static SWITCH_PERIOD: u8 = 10;
+static SNAKE_LENGTH: u8 = 5;
+static SWITCH_PERIOD: u8 = 5;
 
 pub fn visualize_snake(
-    mut commands: Commands,
-    mut snake_state: ResMut<SnakeState>,
-    query: Query<(Entity, &SnakeCell)>,
+    snake_state: Res<SnakeState>,
+    mut query: Query<(&SnakeCell, &mut Visibility)>,
 ) {
-    let time: u8 = snake_state.dimention4;
-    let snake_cells = get_snake_cells(
-        time, 
-        SWITCH_PERIOD, 
-        GRID_SIZE, 
-        snake_state.dimention5,
-        SNAKE_LENGTH);
-        
-    for (entity, snake_cell) in query.iter() {
-        let visibility = if is_cell_in_snake_cells(snake_cell, &snake_cells) {
-            Visibility::Visible
-        } else {
-            Visibility::Hidden
+    let visualize_dimention4: bool = 
+    if snake_state.visualize_dimentionX == 4 
+    || snake_state.visualize_dimentionY == 4 
+    || snake_state.visualize_dimentionZ == 4 {
+        true
+    } else {
+        false
+    };
+
+    let visualize_dimention5: bool = 
+    if snake_state.visualize_dimentionX == 5 
+    || snake_state.visualize_dimentionY == 5 
+    || snake_state.visualize_dimentionZ == 5 {
+        true
+    } else {
+        false
+    };
+    
+    let mut snake_cells_map: HashMap<u8, HashMap<u8, Vec<Vec3>>> = HashMap::new();
+
+    if visualize_dimention4 {
+        for i in 0..100 {
+            snake_cells_map.insert(i, HashMap::new());
+            if visualize_dimention5 {
+                for j in 0..100 {
+                    snake_cells_map.get_mut(&i).unwrap().insert(j, get_snake_cells(
+                        i, 
+                        SWITCH_PERIOD, 
+                        GRID_SIZE, 
+                        j,
+                        SNAKE_LENGTH));
+                }
+            }
+            else {
+                snake_cells_map.get_mut(&i).unwrap().insert(snake_state.dimention5, get_snake_cells(
+                    i, 
+                    SWITCH_PERIOD, 
+                    GRID_SIZE, 
+                    snake_state.dimention5,
+                    SNAKE_LENGTH));
+            }
+        }
+    }
+    else if visualize_dimention5 {
+        snake_cells_map.insert(snake_state.dimention4, HashMap::new());
+        for i in 0..100 {
+            snake_cells_map.get_mut(&snake_state.dimention4).unwrap().insert(i, get_snake_cells(
+                snake_state.dimention4, 
+                SWITCH_PERIOD, 
+                GRID_SIZE, 
+                i,
+                SNAKE_LENGTH));
+        }
+    }
+    else {
+        snake_cells_map.insert(snake_state.dimention4, HashMap::new());
+        snake_cells_map.get_mut(&snake_state.dimention4).unwrap().insert(snake_state.dimention5, get_snake_cells(
+            snake_state.dimention4, 
+            SWITCH_PERIOD, 
+            GRID_SIZE, 
+            snake_state.dimention5,
+            SNAKE_LENGTH));
+    }
+  
+    for (snake_cell, mut visibility) in query.iter_mut() {
+
+        let d4 = if snake_state.visualize_dimentionX == 4 {snake_cell.x} else {
+            if snake_state.visualize_dimentionY == 4 {snake_cell.y} else {
+                if snake_state.visualize_dimentionZ == 4 {snake_cell.z} else {
+                    snake_state.dimention4
+                }
+            }
         };
-        commands.entity(entity).insert(visibility);
+
+        let d5 = if snake_state.visualize_dimentionX == 5 {snake_cell.x} else {
+            if snake_state.visualize_dimentionY == 5 {snake_cell.y} else {
+                if snake_state.visualize_dimentionZ == 5 {snake_cell.z} else {
+                    snake_state.dimention5
+                }
+            }
+        };
+
+        // println!("d4:{} - d5:{}", d4, d5);
+
+        let snake_cells: Vec<Vec3> = snake_cells_map.get(&d4).unwrap().get(&d5).unwrap().clone();
+
+        if visualize_dimention4 {
+            // println!("snake_cells: {:?} d4:{} - d5:{}", snake_cells, d4, d5);
+        }
+
+        if is_cell_in_snake_cells(snake_cell, &snake_cells, &snake_state, d4, d5) {
+            *visibility = Visibility::Visible;
+        } else {
+            *visibility = Visibility::Hidden;
+        }
     }
 }
 
-fn is_cell_in_snake_cells(cell: &SnakeCell, snake_cells: &Vec<Vec3>) -> bool {
+fn is_cell_in_snake_cells(cell: &SnakeCell, snake_cells: &Vec<Vec3>, snake_state: &SnakeState, d4: u8, d5: u8) -> bool {
     for snake_cell in snake_cells {
+
+        let mut cell_location = Vec3::new(-1.0, -1.0, -1.0);
+
+        cell_location.x = match snake_state.visualize_dimentionX {
+            1 => snake_cell.x as f32,
+            2 => snake_cell.y as f32,
+            3 => snake_cell.z as f32,
+            4 => cell.x as f32,
+            5 => cell.x as f32,
+            _ => cell_location.x,
+        };
+
+        cell_location.y = match snake_state.visualize_dimentionY {
+            1 => snake_cell.x as f32,
+            2 => snake_cell.y as f32,
+            3 => snake_cell.z as f32,
+            4 => cell.y as f32,
+            5 => cell.y as f32,
+            _ => cell_location.y,
+        };
+
+        cell_location.z = match snake_state.visualize_dimentionZ {
+            1 => snake_cell.x as f32,
+            2 => snake_cell.y as f32,
+            3 => snake_cell.z as f32,
+            4 => cell.z as f32,
+            5 => cell.z as f32,
+            _ => cell_location.z,
+        };
+
+        //cell_location.x = if cell_location.x < 0.0 { snake_state.dimention1 as f32 } else { cell_location.x };
+        //cell_location.y = if cell_location.y < 0.0 { snake_state.dimention2 as f32 } else { cell_location.y };
+        //cell_location.z = if cell_location.z < 0.0 { snake_state.dimention3 as f32 } else { cell_location.z };
+
         // TODO use u8
-        if (snake_cell.x as i32) == (cell.x as i32)
-            && snake_cell.y as i32 == (cell.y as i32)
-            && snake_cell.z as i32 == (cell.z as i32) {
+        if (cell.x as i32) == (cell_location.x as i32)
+            && cell.y as i32 == (cell_location.y as i32)
+            && cell.z as i32 == (cell_location.z as i32) {
             return true;
         }
     }
