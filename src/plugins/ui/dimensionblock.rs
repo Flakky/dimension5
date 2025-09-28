@@ -15,31 +15,31 @@ pub struct AxisSelector{
 }
 
 #[derive(Component, PartialEq)]
-pub struct UIDimentionBlock{
-    pub dimention: u8,
+pub struct UIDimensionBlock{
+    pub dimension: u8,
     pub axis: Axis,
     pub value: f32,
 }
 
-impl UIDimentionBlock {
-    const fn new(dimention: u8) -> Self {
+impl UIDimensionBlock {
+    const fn new(dimension: u8, axis: Axis) -> Self {
         Self {
-            dimention,
-            axis: Axis::None,
+            dimension,
+            axis: axis,
             value: 0.0,
         }
     }
 }
 
 pub fn create_dimention_blocks(mut commands: Commands){
-    create_dimention_block(&mut commands, 1);
-    create_dimention_block(&mut commands, 2);
-    create_dimention_block(&mut commands, 3);
-    create_dimention_block(&mut commands, 4);
-    create_dimention_block(&mut commands, 5);
+    create_dimention_block(&mut commands, 1, Axis::X);
+    create_dimention_block(&mut commands, 2, Axis::Y);
+    create_dimention_block(&mut commands, 3, Axis::Z);
+    create_dimention_block(&mut commands, 4, Axis::None);
+    create_dimention_block(&mut commands, 5, Axis::None);
 }
 
-fn create_dimention_block(commands: &mut Commands, dimention: u8){
+fn create_dimention_block(commands: &mut Commands, dimention: u8, axis: Axis){
     let block = (
         Node {
             position_type: PositionType::Absolute,
@@ -49,7 +49,7 @@ fn create_dimention_block(commands: &mut Commands, dimention: u8){
             height: Val::Px(30.),
             ..default()
         },
-        UIDimentionBlock::new(dimention),
+        UIDimensionBlock::new(dimention, axis),
         ZIndex(1),
         BackgroundColor(Color::srgb(0.25, 0.25, 0.25)),
         children![
@@ -174,7 +174,7 @@ fn create_value_selector() -> impl Bundle {
 
 // Update dimension value and text
 pub fn update_value_selector(
-    query: Query<(Entity, &UIDimentionBlock)>,
+    query: Query<(Entity, &UIDimensionBlock)>,
     children_query: Query<&Children>,
     mut text_query: Query<&mut Text>,
     mut node_query: Query<&mut Node>,
@@ -205,7 +205,7 @@ pub fn update_value_selector(
 // Control dimension value by dragging the slider
 pub fn control_dimention_value_selector(
     query: Query<(&Interaction, &RelativeCursorPosition, &ChildOf)>,
-    mut dimention_block_query: Query<&mut UIDimentionBlock>
+    mut dimention_block_query: Query<&mut UIDimensionBlock>
 ){
     for (interaction, relative_cursor_position, child_of) in query.iter() {
         if *interaction == Interaction::Pressed {
@@ -221,7 +221,7 @@ pub fn control_dimention_value_selector(
 // Select axis for dimension
 pub fn select_axis(
     interaction_query: Query<(&Interaction, &AxisSelector, &ChildOf), (Changed<Interaction>, With<Button>)>,
-    mut dimention_block_query: Query<(&mut UIDimentionBlock, &Children)>,
+    mut dimention_block_query: Query<(&mut UIDimensionBlock, &Children)>,
 ){
     for (interaction, axis_selector, child_of) in interaction_query {
         if *interaction != Interaction::Pressed {break;}
@@ -241,7 +241,7 @@ pub fn select_axis(
 
 // Update axis selection outline
 pub fn update_axis_selector(
-    query: Query<(Entity, &UIDimentionBlock)>,
+    query: Query<(Entity, &UIDimensionBlock)>,
     children_query: Query<&Children>,
     mut axis_button_query: Query<(&mut Outline, &AxisSelector, &ChildOf)>,
 ){

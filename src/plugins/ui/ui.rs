@@ -1,9 +1,9 @@
 use bevy::prelude::*;
-use crate::plugins::ui::dimentionblock::create_dimention_blocks;
-use crate::plugins::ui::dimentionblock::update_value_selector;
-use crate::plugins::ui::dimentionblock::control_dimention_value_selector;
-use crate::plugins::ui::dimentionblock::select_axis;
-use crate::plugins::ui::dimentionblock::update_axis_selector;
+use crate::plugins::ui::dimensionblock::create_dimention_blocks;
+use crate::plugins::ui::dimensionblock::update_value_selector;
+use crate::plugins::ui::dimensionblock::control_dimention_value_selector;
+use crate::plugins::ui::dimensionblock::select_axis;
+use crate::plugins::ui::dimensionblock::update_axis_selector;
 
 pub struct UI;
 

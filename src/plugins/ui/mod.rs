@@ -1,2 +1,2 @@
 pub mod ui;
-pub mod dimentionblock;
+pub mod dimensionblock;

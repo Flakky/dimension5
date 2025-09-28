@@ -12,9 +12,6 @@ pub fn visualize_snake(
     mut snake_state: ResMut<SnakeState>,
     query: Query<(Entity, &SnakeCell)>,
 ) {
-    //snake_state.dimention5 = snake_state.dimention5 + 1;
-    snake_state.dimention4 = if snake_state.dimention4 == 255 { 1 } else { snake_state.dimention4 + 1 };
-    
     let time: u8 = snake_state.dimention4;
     let snake_cells = get_snake_cells(
         time, 
