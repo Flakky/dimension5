@@ -212,7 +212,7 @@ pub fn control_dimention_value_selector(
             let parent = child_of.parent();
 
             if let Ok(mut parent_elem) = dimention_block_query.get_mut(parent) {
-                parent_elem.value = relative_cursor_position.normalized.unwrap().x.clamp(0.0, 1.0);
+                parent_elem.value = (relative_cursor_position.normalized.unwrap().x + 0.5).clamp(0.0, 1.0);
             }
         }
     }
