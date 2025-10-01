@@ -8,7 +8,7 @@ pub struct SnakeState {
     pub dimention4: u8,
     pub dimention5: u8,
 
-    pub visualize_dimentionX: u8,
-    pub visualize_dimentionY: u8,
-    pub visualize_dimentionZ: u8,
+    pub visualize_dimention_x: u8,
+    pub visualize_dimention_y: u8,
+    pub visualize_dimention_z: u8,
 }

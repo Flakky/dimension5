@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::view::visibility};
+use bevy::prelude::*;
 use crate::plugins::snake::snakestate::SnakeState;
 use crate::plugins::snake::snakecell::SnakeCell;
 use rand::{Rng, SeedableRng};
@@ -13,18 +13,18 @@ pub fn visualize_snake(
     mut query: Query<(&SnakeCell, &mut Visibility)>,
 ) {
     let visualize_dimention4: bool = 
-    if snake_state.visualize_dimentionX == 4 
-    || snake_state.visualize_dimentionY == 4 
-    || snake_state.visualize_dimentionZ == 4 {
+    if snake_state.visualize_dimention_x == 4 
+    || snake_state.visualize_dimention_y == 4 
+    || snake_state.visualize_dimention_z == 4 {
         true
     } else {
         false
     };
 
     let visualize_dimention5: bool = 
-    if snake_state.visualize_dimentionX == 5 
-    || snake_state.visualize_dimentionY == 5 
-    || snake_state.visualize_dimentionZ == 5 {
+    if snake_state.visualize_dimention_x == 5 
+    || snake_state.visualize_dimention_y == 5 
+    || snake_state.visualize_dimention_z == 5 {
         true
     } else {
         false
@@ -78,17 +78,17 @@ pub fn visualize_snake(
   
     for (snake_cell, mut visibility) in query.iter_mut() {
 
-        let d4 = if snake_state.visualize_dimentionX == 4 {snake_cell.x} else {
-            if snake_state.visualize_dimentionY == 4 {snake_cell.y} else {
-                if snake_state.visualize_dimentionZ == 4 {snake_cell.z} else {
+        let d4 = if snake_state.visualize_dimention_x == 4 {snake_cell.x} else {
+            if snake_state.visualize_dimention_y == 4 {snake_cell.y} else {
+                if snake_state.visualize_dimention_z == 4 {snake_cell.z} else {
                     snake_state.dimention4
                 }
             }
         };
 
-        let d5 = if snake_state.visualize_dimentionX == 5 {snake_cell.x} else {
-            if snake_state.visualize_dimentionY == 5 {snake_cell.y} else {
-                if snake_state.visualize_dimentionZ == 5 {snake_cell.z} else {
+        let d5 = if snake_state.visualize_dimention_x == 5 {snake_cell.x} else {
+            if snake_state.visualize_dimention_y == 5 {snake_cell.y} else {
+                if snake_state.visualize_dimention_z == 5 {snake_cell.z} else {
                     snake_state.dimention5
                 }
             }
@@ -102,7 +102,7 @@ pub fn visualize_snake(
             // println!("snake_cells: {:?} d4:{} - d5:{}", snake_cells, d4, d5);
         }
 
-        if is_cell_in_snake_cells(snake_cell, &snake_cells, &snake_state, d4, d5) {
+        if is_cell_in_snake_cells(snake_cell, &snake_cells, &snake_state) {
             *visibility = Visibility::Visible;
         } else {
             *visibility = Visibility::Hidden;
@@ -110,12 +110,12 @@ pub fn visualize_snake(
     }
 }
 
-fn is_cell_in_snake_cells(cell: &SnakeCell, snake_cells: &Vec<Vec3>, snake_state: &SnakeState, d4: u8, d5: u8) -> bool {
+fn is_cell_in_snake_cells(cell: &SnakeCell, snake_cells: &Vec<Vec3>, snake_state: &SnakeState) -> bool {
     for snake_cell in snake_cells {
 
         let mut cell_location = Vec3::new(-1.0, -1.0, -1.0);
 
-        cell_location.x = match snake_state.visualize_dimentionX {
+        cell_location.x = match snake_state.visualize_dimention_x {
             1 => snake_cell.x as f32,
             2 => snake_cell.y as f32,
             3 => snake_cell.z as f32,
@@ -124,7 +124,7 @@ fn is_cell_in_snake_cells(cell: &SnakeCell, snake_cells: &Vec<Vec3>, snake_state
             _ => cell_location.x,
         };
 
-        cell_location.y = match snake_state.visualize_dimentionY {
+        cell_location.y = match snake_state.visualize_dimention_y {
             1 => snake_cell.x as f32,
             2 => snake_cell.y as f32,
             3 => snake_cell.z as f32,
@@ -133,7 +133,7 @@ fn is_cell_in_snake_cells(cell: &SnakeCell, snake_cells: &Vec<Vec3>, snake_state
             _ => cell_location.y,
         };
 
-        cell_location.z = match snake_state.visualize_dimentionZ {
+        cell_location.z = match snake_state.visualize_dimention_z {
             1 => snake_cell.x as f32,
             2 => snake_cell.y as f32,
             3 => snake_cell.z as f32,

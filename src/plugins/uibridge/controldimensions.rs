@@ -19,9 +19,9 @@ pub fn control_dimensions(
         }
 
         match uidimensionblock.axis {
-            Axis::X => snake_state.visualize_dimentionX = uidimensionblock.dimension,
-            Axis::Y => snake_state.visualize_dimentionY = uidimensionblock.dimension,
-            Axis::Z => snake_state.visualize_dimentionZ = uidimensionblock.dimension,
+            Axis::X => snake_state.visualize_dimention_x = uidimensionblock.dimension,
+            Axis::Y => snake_state.visualize_dimention_y = uidimensionblock.dimension,
+            Axis::Z => snake_state.visualize_dimention_z = uidimensionblock.dimension,
             Axis::None => {} // Handle the None case
         }
     }
