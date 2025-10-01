@@ -43,7 +43,7 @@ fn create_dimention_block(commands: &mut Commands, dimention: u8, axis: Axis){
     let block = (
         Node {
             position_type: PositionType::Absolute,
-            top: Val::Px(dimention as f32 * 35.0),
+            top: Val::Px(dimention as f32 * 35.0 + 100.0),
             left: Val::Px(15.0),
             width: Val::Px(500.),
             height: Val::Px(30.),

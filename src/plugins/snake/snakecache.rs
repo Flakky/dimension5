@@ -1,0 +1,98 @@
+use bevy::prelude::*;
+use std::collections::HashMap;
+use rand::{Rng, SeedableRng};
+
+use crate::plugins::snake::snakecell::GRID_SIZE;
+
+static SNAKE_LENGTH: u8 = 5;
+static SWITCH_PERIOD: u8 = 5;
+
+#[derive(Resource, Default, Debug)]
+pub struct SnakeCache {
+    pub snake_cells_map: HashMap<u8, HashMap<u8, Vec<Vec3>>>,
+}
+
+pub fn create_snake_cache(
+    mut commands: Commands
+){
+    let mut snake_cells_map: HashMap<u8, HashMap<u8, Vec<Vec3>>> = HashMap::new();
+
+    for i in 0..=100 {
+        snake_cells_map.insert(i, HashMap::new());
+        for j in 0..=100 {
+            snake_cells_map.get_mut(&i).unwrap().insert(j, get_snake_cells(
+                i, 
+                SWITCH_PERIOD, 
+                GRID_SIZE, 
+                j,
+                SNAKE_LENGTH));
+        };
+    }
+
+    commands.insert_resource(SnakeCache { snake_cells_map });
+}
+
+fn get_snake_cells(time: u8, switch_period: u8, grid_size: u8, dimension_seed: u8, snake_length: u8) -> Vec<Vec3> {
+    let mut t: u8 = 0;
+    let mut direction: Vec3 = Vec3::new(1.0, 0.0, 0.0);
+    let mut last_direction: Vec3 = direction;
+    let mut position: Vec3 = Vec3::new(0.0, 0.0, 0.0);
+    loop {
+        let new_time = u8::min(t + switch_period, time);
+
+        let delta = new_time - t;
+
+        position = position + (direction.normalize() * (delta as f32));
+
+        t = t + delta;
+
+        // TODO: Check for bounds to switch direction
+
+        // println!("t:{} - tm:{} - dir:{} - ldir:{} - d:{} - p:{}", t, time, direction, last_direction, delta, position);
+
+        if t >= time {
+            let mut snake_cells: Vec<Vec3> = Vec::new();
+            let mut cell_position: Vec3 = position;
+            for i in 0..snake_length {
+                snake_cells.push(cell_position);
+                let backward_direction = if i < delta { -direction } else { -last_direction };
+                cell_position = cell_position + backward_direction;
+            }
+            return snake_cells;
+        }
+        else {
+            last_direction = direction;
+            direction = random_direction(direction, dimension_seed+t, position, grid_size);
+        }
+    }
+}
+
+fn random_direction(direction: Vec3, dimension_seed: u8, position: Vec3, grid_size: u8) -> Vec3 {
+    let possible_directions = [
+        Vec3::new(1.0, 0.0, 0.0),
+        Vec3::new(-1.0, 0.0, 0.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        Vec3::new(0.0, -1.0, 0.0),
+        Vec3::new(0.0, 0.0, 1.0),
+        Vec3::new(0.0, 0.0, -1.0),
+    ];
+
+    let possible_directions = 
+    possible_directions.iter().filter(|&d| {
+        !( // Exclude unsuitable directions
+            d == &direction 
+            || d == &(-direction)
+            || (position.x as u8 <= 0 && d.x == -1.0)
+            || (position.x as u8 >= grid_size - 1 && d.x == 1.0 )
+            || (position.y as u8 <= 0 && d.y == -1.0)
+            || (position.y as u8 >= grid_size - 1 && d.y == 1.0)
+            || (position.z as u8 <= 0 && d.z == -1.0)
+            || (position.z as u8 >= grid_size - 1 && d.z == 1.0)
+        )
+    }).collect::<Vec<&Vec3>>();
+
+    let mut rng = rand::rngs::StdRng::seed_from_u64(dimension_seed as u64);
+    let index = rng.random_range(0..possible_directions.len());
+
+    return possible_directions[index].clone();
+}

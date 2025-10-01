@@ -17,11 +17,10 @@ fn main() {
 
     #[cfg(debug_assertions)]
     {
-        use bevy::diagnostic::{FrameTimeDiagnosticsPlugin};
-
+        use bevy::dev_tools::fps_overlay::FpsOverlayPlugin;
+        
         app
-            .add_plugins(FrameTimeDiagnosticsPlugin::default())
-            .add_plugins(bevy::diagnostic::LogDiagnosticsPlugin::default());
+            .add_plugins(FpsOverlayPlugin::default());
     }
 
     app.run();

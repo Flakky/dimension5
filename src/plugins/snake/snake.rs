@@ -3,6 +3,7 @@ use crate::plugins::snake::visualizesnake::visualize_snake;
 use crate::plugins::snake::snakestate::SnakeState;
 use crate::plugins::snake::snakecell::create_snake_cells;
 use crate::plugins::snake::snakecell::GRID_SIZE;
+use crate::plugins::snake::snakecache::create_snake_cache;
 
 /// Snake plugin for the Bevy game engine
 pub struct SnakePlugin;
@@ -13,6 +14,7 @@ impl Plugin for SnakePlugin {
             .add_systems(Startup, setup_snake)
             .add_systems(Startup, spawn_axis_meshes)
             .add_systems(Startup, create_snake_cells)
+            .add_systems(Startup, create_snake_cache)
             .insert_resource(SnakeState::default())
             .add_systems(Update, visualize_snake)
             ;
