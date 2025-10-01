@@ -1,21 +1,23 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use rand::{Rng, SeedableRng};
 
 use crate::plugins::snake::snakecell::GRID_SIZE;
+use crate::plugins::snake::snakecell::SnakeCell;
 
 static SNAKE_LENGTH: u8 = 5;
 static SWITCH_PERIOD: u8 = 5;
 
 #[derive(Resource, Default, Debug)]
 pub struct SnakeCache {
-    pub snake_cells_map: HashMap<u8, HashMap<u8, Vec<Vec3>>>,
+    pub snake_cells_map: HashMap<u8, HashMap<u8, HashSet<SnakeCell>>>,
 }
 
 pub fn create_snake_cache(
     mut commands: Commands
 ){
-    let mut snake_cells_map: HashMap<u8, HashMap<u8, Vec<Vec3>>> = HashMap::new();
+    let mut snake_cells_map: HashMap<u8, HashMap<u8, HashSet<SnakeCell>>> = HashMap::new();
 
     for i in 0..=100 {
         snake_cells_map.insert(i, HashMap::new());
@@ -32,7 +34,7 @@ pub fn create_snake_cache(
     commands.insert_resource(SnakeCache { snake_cells_map });
 }
 
-fn get_snake_cells(time: u8, switch_period: u8, grid_size: u8, dimension_seed: u8, snake_length: u8) -> Vec<Vec3> {
+fn get_snake_cells(time: u8, switch_period: u8, grid_size: u8, dimension_seed: u8, snake_length: u8) -> HashSet<SnakeCell> {
     let mut t: u8 = 0;
     let mut direction: Vec3 = Vec3::new(1.0, 0.0, 0.0);
     let mut last_direction: Vec3 = direction;
@@ -51,10 +53,10 @@ fn get_snake_cells(time: u8, switch_period: u8, grid_size: u8, dimension_seed: u
         // println!("t:{} - tm:{} - dir:{} - ldir:{} - d:{} - p:{}", t, time, direction, last_direction, delta, position);
 
         if t >= time {
-            let mut snake_cells: Vec<Vec3> = Vec::new();
+            let mut snake_cells: HashSet<SnakeCell> = HashSet::new();
             let mut cell_position: Vec3 = position;
             for i in 0..snake_length {
-                snake_cells.push(cell_position);
+                snake_cells.insert(SnakeCell { x: cell_position.x as u8, y: cell_position.y as u8, z: cell_position.z as u8 });
                 let backward_direction = if i < delta { -direction } else { -last_direction };
                 cell_position = cell_position + backward_direction;
             }

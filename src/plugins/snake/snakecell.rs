@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 pub static GRID_SIZE: u8 = 30;
 
-#[derive(Component)]
+#[derive(Component, Debug, Hash, PartialEq, Eq)]
 pub struct SnakeCell{
     pub x: u8,
     pub y: u8,
