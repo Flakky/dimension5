@@ -9,44 +9,28 @@ pub fn control_dimensions(
     query: Query<&UIDimensionBlock>,
 ) {
     for uidimensionblock in query.iter() {
-        match uidimensionblock.axis {
+        let value = match uidimensionblock.axis {
             Some(axis) => match axis {
                 Axis::X => {
-                    visualization_state.x =
-                        DimensionState::Axis(crate::plugins::snake::visualization_state::Axis::X)
+                    DimensionState::Axis(crate::plugins::snake::visualization_state::Axis::X)
                 }
                 Axis::Y => {
-                    visualization_state.y =
-                        DimensionState::Axis(crate::plugins::snake::visualization_state::Axis::Y)
+                    DimensionState::Axis(crate::plugins::snake::visualization_state::Axis::Y)
                 }
                 Axis::Z => {
-                    visualization_state.z =
-                        DimensionState::Axis(crate::plugins::snake::visualization_state::Axis::Z)
+                    DimensionState::Axis(crate::plugins::snake::visualization_state::Axis::Z)
                 }
             },
-            None => match uidimensionblock.dimension {
-                1 => {
-                    visualization_state.x =
-                        DimensionState::Value((uidimensionblock.value * 100.0) as u8)
-                }
-                2 => {
-                    visualization_state.y =
-                        DimensionState::Value((uidimensionblock.value * 100.0) as u8)
-                }
-                3 => {
-                    visualization_state.z =
-                        DimensionState::Value((uidimensionblock.value * 100.0) as u8)
-                }
-                4 => {
-                    visualization_state.t =
-                        DimensionState::Value((uidimensionblock.value * 100.0) as u8)
-                }
-                5 => {
-                    visualization_state.d5 =
-                        DimensionState::Value((uidimensionblock.value * 100.0) as u8)
-                }
-                _ => unreachable!(),
-            },
+            None => DimensionState::Value((uidimensionblock.value * 100.0) as u8),
+        };
+
+        match uidimensionblock.dimension {
+            1 => visualization_state.x = value,
+            2 => visualization_state.y = value,
+            3 => visualization_state.z = value,
+            4 => visualization_state.t = value,
+            5 => visualization_state.d5 = value,
+            _ => unreachable!(),
         }
     }
 }

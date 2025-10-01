@@ -61,27 +61,14 @@ impl Default for VisualizationState {
     }
 }
 
-struct InverseVisualizationState {
-    pub x: Option<Dimension>,
-    pub y: Option<Dimension>,
-    pub z: Option<Dimension>,
-    pub fixed1: Option<Dimension>,
-    pub fixed2: Option<Dimension>,
-    pub fixed3: Option<Dimension>,
-    pub fixed4: Option<Dimension>,
-    pub fixed5: Option<Dimension>,
-}
-
-impl VisualizationState {
-    pub fn inverse(&self) -> InverseVisualizationState {
-        let x = match (self.x, self.y, self.z, self.t, self.d5) {
-            (DimensionState::Axis(Axis::X), _, _, _, _) => Dimension::X,
-            (_, DimensionState::Axis(Axis::X), _, _, _) => Dimension::Y,
-            (_, _, DimensionState::Axis(Axis::X), _, _) => Dimension::Z,
-            (_, _, _, DimensionState::Axis(Axis::X), _) => Dimension::T,
-            (_, _, _, _, DimensionState::Axis(Axis::X)) => Dimension::D5,
-            _ => None,
-        };
+impl DimensionState {
+    pub fn resolve(&self, x: u8, y: u8, z: u8) -> u8 {
+        match self {
+            DimensionState::Axis(Axis::X) => x,
+            DimensionState::Axis(Axis::Y) => y,
+            DimensionState::Axis(Axis::Z) => z,
+            DimensionState::Value(value) => *value,
+        }
     }
 }
 

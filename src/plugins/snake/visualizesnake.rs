@@ -1,37 +1,26 @@
 use crate::plugins::snake::snakecache::SnakeCache;
 use crate::plugins::snake::snakecell::SnakeCell;
-use crate::plugins::snake::visualization_state::Dimension;
+use crate::plugins::snake::visualization_state::Axis;
+use crate::plugins::snake::visualization_state::DimensionState;
 use crate::plugins::snake::visualization_state::VisualizationState;
 use bevy::prelude::*;
 use std::collections::HashSet;
 
 pub fn visualize_snake(
-    snake_state: Res<VisualizationState>,
+    visualization_state: Res<VisualizationState>,
     mut query: Query<(&SnakeCell, &mut Visibility)>,
     snake_cache: Res<SnakeCache>,
 ) {
-    for (snake_cell, mut visibility) in query.iter_mut() {
-        let d4 = match (
-            &snake_state.visualize_dimention_x,
-            &snake_state.visualize_dimention_y,
-            &snake_state.visualize_dimention_z,
-        ) {
-            (Dimension::T, _, _) => snake_cell.x,
-            (_, Dimension::T, _) => snake_cell.y,
-            (_, _, Dimension::T) => snake_cell.z,
-            _ => snake_state.t,
-        };
+    info!("visualization state: {:?}", visualization_state);
 
-        let d5 = match (
-            &snake_state.visualize_dimention_x,
-            &snake_state.visualize_dimention_y,
-            &snake_state.visualize_dimention_z,
-        ) {
-            (Dimension::D5, _, _) => snake_cell.x,
-            (_, Dimension::D5, _) => snake_cell.y,
-            (_, _, Dimension::D5) => snake_cell.z,
-            _ => snake_state.d5,
-        };
+    for (world_snake, mut visibility) in query.iter_mut() {
+        let d4 = visualization_state
+            .t
+            .resolve(world_snake.x, world_snake.y, world_snake.z);
+
+        let d5 = visualization_state
+            .d5
+            .resolve(world_snake.x, world_snake.y, world_snake.z);
 
         //debug!("d4:{} - d5:{}", d4, d5);
 
@@ -42,7 +31,7 @@ pub fn visualize_snake(
             .get(&d5)
             .unwrap();
 
-        if is_cell_in_snake_cells(snake_cell, &snake_cells, &snake_state) {
+        if is_cell_in_snake_cells(world_snake, &snake_cells, &visualization_state) {
             *visibility = Visibility::Visible;
         } else {
             *visibility = Visibility::Hidden;
@@ -51,38 +40,33 @@ pub fn visualize_snake(
 }
 
 fn is_cell_in_snake_cells(
-    cell: &SnakeCell,
+    world_cell: &SnakeCell,
     snake_cells: &HashSet<SnakeCell>,
-    snake_state: &VisualizationState,
+    visualization_state: &VisualizationState,
 ) -> bool {
     for snake_cell in snake_cells {
-        let mut cell_location = SnakeCell { x: 0, y: 0, z: 0 };
+        let matches_x = match visualization_state.x {
+            DimensionState::Axis(Axis::X) => snake_cell.x == world_cell.x,
+            DimensionState::Axis(Axis::Y) => snake_cell.y == world_cell.x,
+            DimensionState::Axis(Axis::Z) => snake_cell.z == world_cell.x,
+            DimensionState::Value(value) => true,
+        };
 
-        cell_location.x = snake_state.visualize_dimention_x.project(
-            snake_cell.x,
-            snake_cell.y,
-            snake_cell.z,
-            cell.x,
-            cell.x,
-        );
+        let matches_y = match visualization_state.y {
+            DimensionState::Axis(Axis::X) => snake_cell.x == world_cell.y,
+            DimensionState::Axis(Axis::Y) => snake_cell.y == world_cell.y,
+            DimensionState::Axis(Axis::Z) => snake_cell.z == world_cell.y,
+            DimensionState::Value(value) => true,
+        };
 
-        cell_location.y = snake_state.visualize_dimention_y.project(
-            snake_cell.x,
-            snake_cell.y,
-            snake_cell.z,
-            cell.y,
-            cell.y,
-        );
+        let matches_z = match visualization_state.z {
+            DimensionState::Axis(Axis::X) => snake_cell.x == world_cell.z,
+            DimensionState::Axis(Axis::Y) => snake_cell.y == world_cell.z,
+            DimensionState::Axis(Axis::Z) => snake_cell.z == world_cell.z,
+            DimensionState::Value(value) => true,
+        };
 
-        cell_location.z = snake_state.visualize_dimention_z.project(
-            snake_cell.x,
-            snake_cell.y,
-            snake_cell.z,
-            cell.z,
-            cell.z,
-        );
-
-        if cell == &cell_location {
+        if matches_x && matches_y && matches_z {
             return true;
         }
     }
