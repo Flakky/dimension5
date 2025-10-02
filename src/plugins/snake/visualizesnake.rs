@@ -45,28 +45,28 @@ fn is_cell_in_snake_cells(
     visualization_state: &VisualizationState,
 ) -> bool {
     for snake_cell in snake_cells {
-        let matches_x = match visualization_state.x {
-            DimensionState::Axis(Axis::X) => snake_cell.x == world_cell.x,
-            DimensionState::Axis(Axis::Y) => snake_cell.y == world_cell.x,
-            DimensionState::Axis(Axis::Z) => snake_cell.z == world_cell.x,
-            DimensionState::Value(value) => true,
+        let x = match visualization_state.x {
+            DimensionState::Axis(Axis::X) => world_cell.x == snake_cell.x,
+            DimensionState::Axis(Axis::Y) => world_cell.y == snake_cell.x,
+            DimensionState::Axis(Axis::Z) => world_cell.z == snake_cell.x,
+            DimensionState::Value(value) => snake_cell.x == value,
         };
 
-        let matches_y = match visualization_state.y {
-            DimensionState::Axis(Axis::X) => snake_cell.x == world_cell.y,
-            DimensionState::Axis(Axis::Y) => snake_cell.y == world_cell.y,
-            DimensionState::Axis(Axis::Z) => snake_cell.z == world_cell.y,
-            DimensionState::Value(value) => true,
+        let y = match visualization_state.y {
+            DimensionState::Axis(Axis::X) => world_cell.x == snake_cell.y,
+            DimensionState::Axis(Axis::Y) => world_cell.y == snake_cell.y,
+            DimensionState::Axis(Axis::Z) => world_cell.z == snake_cell.y,
+            DimensionState::Value(value) => snake_cell.y == value,
         };
 
-        let matches_z = match visualization_state.z {
-            DimensionState::Axis(Axis::X) => snake_cell.x == world_cell.z,
-            DimensionState::Axis(Axis::Y) => snake_cell.y == world_cell.z,
-            DimensionState::Axis(Axis::Z) => snake_cell.z == world_cell.z,
-            DimensionState::Value(value) => true,
+        let z = match visualization_state.z {
+            DimensionState::Axis(Axis::X) => world_cell.x == snake_cell.z,
+            DimensionState::Axis(Axis::Y) => world_cell.y == snake_cell.z,
+            DimensionState::Axis(Axis::Z) => world_cell.z == snake_cell.z,
+            DimensionState::Value(value) => snake_cell.z == value,
         };
 
-        if matches_x && matches_y && matches_z {
+        if x && y && z {
             return true;
         }
     }
